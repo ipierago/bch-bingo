@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace bingo
+namespace bch_bingo
 {
     class Program
     {
@@ -88,16 +88,81 @@ namespace bingo
                     }    
                 }
             }
+#if false
+            private System.Drawing.Font GetAdjustedFont(System.Drawing.Graphics g, string graphicString, System.Drawing.Font originalFont, int containerWidth, int maxFontSize, int minFontSize, bool smallestOnFail) {
+                System.Drawing.Font testFont = originalFont;
+                for (int adjustedSize = maxFontSize; adjustedSize >= minFontSize; adjustedSize--) {
+                    testFont = new System.Drawing.Font(originalFont.Name, adjustedSize, originalFont.Style);
+                    System.Drawing.SizeF adjustedSizeNew = g.MeasureString(graphicString, testFont);
+                    if (containerWidth > Convert.ToInt32(adjustedSizeNew.Width)) {
+                        // Good font, return it
+                        return testFont;
+                    }
+                }
+
+                // If you get here there was no fontsize that worked
+                // return minimumSize or original?
+                if (smallestOnFail) {
+                    return testFont;
+                } else {
+                    return originalFont;
+                }
+            }            
+
+            private void _DrawString(System.Drawing.Graphics graphics, String str, System.Drawing.SizeF bounds, String fontFamilyName) {
+                int bestSize = 1;
+                for (int thisSize = bestSize; ; ++thisSize) {
+                    var font = new System.Drawing.Font(fontFamilyName, thisSize);
+                    System.Drawing.SizeF thisBounds = graphics.MeasureString(str, font);
+                    if ((thisBounds.Width > bounds.Width) || (thisBounds.Height > bounds.Height)) {
+                        break;
+                    }
+                }
+
+            }
+#endif            
+        }
+
+        static void CreateCallList(Vocabulary vocab) {
+            var rnd = new System.Random();
+            var c = vocab.count;
+            var list = new List<int>();
+            for (var i = 0; i < c; ++i) list.Add(i);
+            for (var i = c; i > 0; i--) {
+                var j = rnd.Next(0, i);
+                var temp = list[0];
+                list[0] = list[j];
+                list[j] = temp;
+            }
+            
+            using System.IO.StreamWriter sw = new("calllist.txt");
+            var n = 0;
+            foreach (var index in list) {
+                var name = vocab.GetNameByIndex(index);
+                var str = String.Format("{0}:{1}", n,name);
+                sw.WriteLine(str);
+                ++n;
+            }
+
+        }
+
+        static void CreateCards(Vocabulary vocab)
+        {
+            var count = 22;
+            for (var i = 1; i <= count; ++i) {
+                var card = new Card(5, 2480, 3508, vocab);
+                card.bitmap.Save($"out{i,0:00}.png", System.Drawing.Imaging.ImageFormat.Png);
+            }
         }
 
         static void Main(string[] args)
         {
-            var vocabulary = new Vocabulary();
-            var count = 30;
-            for (var i = 0; i < count; ++i) {
-                var card = new Card(5, 2480, 3508, vocabulary);
-                card.bitmap.Save($"out{i,0:00}.png", System.Drawing.Imaging.ImageFormat.Png);
-            }
+            var vocab = new Vocabulary();
+            
+            CreateCards(vocab);
+            CreateCallList(vocab);
         }
+
+
     }
 }
